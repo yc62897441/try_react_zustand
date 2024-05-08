@@ -5,6 +5,10 @@ import { create } from 'zustand'
 // create 這個 function 接收一個 function，這個 function 會接到一個 set function，透過 set function 來更新我們的 state，透過這個 set function 來更新 state 的方式就好像我們透過 setState((state) => newState) 的方式相同，需要回傳一個新的 value。
 // https://medium.com/@Hsu.Yang-Min/day25-%E6%88%91%E7%9A%84-react-%E5%AD%B8%E7%BF%92%E8%A8%98%E9%8C%84-zustand-81fd9abfb4e
 
+// persist(重新整理時，把 store 的資料也保存下來)
+// https://docs.pmnd.rs/zustand/integrations/persisting-store-data
+import { persist, createJSONStorage } from 'zustand/middleware'
+
 export const useCountStore = create((set) => ({
     // 可以定義多個 state 的值
     count: 0,
@@ -22,11 +26,26 @@ export const useCountStore = create((set) => ({
     },
 }))
 
-export const useNumberStore = create((set) => ({
-    number: 0,
-    increase: (by) => set((state) => ({ number: state.number + by })),
-    resetNumber: () => set({ number: 0 }),
-}))
+// export const useNumberStore = create((set) => ({
+//     number: 0,
+//     increase: (by) => set((state) => ({ number: state.number + by })),
+//     resetNumber: () => set({ number: 0 }),
+// }))
+// 加上 persist 的寫法
+export const useNumberStore = create(
+    persist(
+        (set) => ({
+            number: 0,
+            increase: (by) => set((state) => ({ number: state.number + by })),
+
+            resetNumber: () => set({ number: 0 }),
+        }),
+        {
+            name: 'food-storage', // name of the item in the storage (must be unique)
+            storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+        }
+    )
+)
 
 // 處理非同步的寫法
 // set 是用來更新我們的狀態，get 則是可以在任何地方取得目前最新的狀態。
